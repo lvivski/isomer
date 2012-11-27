@@ -22,12 +22,12 @@ require([
     
     game.setPlayer(player)
     
-    for (var row = 0; row < 10; row++) {
-      for (var col = 0; col < 10; col++) {
+    for (var row = 0; row < 25; row++) {
+      for (var col = 0; col < 25; col++) {
         game.add(block.create({
-          img: sprites.tile
-        , width: 62
-        , height: 30 
+          sprite: sprites.tile
+        , width: 64
+        , height: 32 
         , x: row
         , y: col
         , z: 0
@@ -43,13 +43,13 @@ require([
       moving = true
 
       if (code === 38 || code === 87) { // up | w
-        player.command('move', 'ne', release)
+        player.command('move', {dx: 0, dy: -1, dz: 0}, release)
       } else if (code === 40 || code === 83) { // down | s
-        player.command('move', 'sw', release)
+        player.command('move', {dx: 0, dy: 1, dz: 0}, release)
       } else if (code === 37 || code === 65) { // left | a
-        player.command('move', 'nw', release)
+        player.command('move', {dx: -1, dy: 0, dz: 0}, release)
       } else if (code === 39 || code === 68) { // right | d
-        player.command('move', 'se', release)
+        player.command('move', {dx: 1, dy: 0, dz: 0}, release)
       } else if (code === 32 || code === 16) { // space | shift
 
       } else if (code === 13 || code === 69) { // enter | e

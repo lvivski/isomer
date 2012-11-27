@@ -4,17 +4,22 @@ define(['util'], function(util) {
   function UI(options) {
     this.canvas = options.canvas
     this.ctx = this.canvas.getContext('2d')
-    this.ctx.webkitspritesmoothingEnabled = false;
+    this.ctx.webkitspritesmoothingEnabled = false
     
     this.width = canvas.width
     this.height = canvas.height
     
     this.cell = options.cell
     
+    this.cx = 0
+    this.cy = 0
+    
     this.center = { x: 0, y: 0, z: 0 }
     this.projection = this.project(this.center.x, this.center.y, this.center.z)
     
     this.layers = []
+    
+    this._changed = false
     
     this.init()
   }
@@ -45,6 +50,8 @@ define(['util'], function(util) {
     if (!this._changed) return
     this._changed = false
     
+    this._timestamp = +new Date
+    
     this.ctx.save()
     this.ctx.fillStyle = '#fff'
     this.ctx.fillRect(0, 0, this.width, this.height)
@@ -52,17 +59,11 @@ define(['util'], function(util) {
     this.cx = Math.round(this.width / 2 - this.projection.x)
     this.cy = Math.round(this.height / 2 - this.projection.y)
       
-    for (var i = 5; i >= -5; i--) {
-      if (i > 0) {
-        this.ctx.fillStyle = 'rgba(0,0,0,0.4)'
-        this.ctx.fillRect(0, 0, this.width, this.height)
-      }
-      for (var j = 0; j < this.layers.length; j++) {
+    for (var i = 0, len = this.layers.length; i < len; i++) {
         this.ctx.save()
         this.ctx.translate(this.cx, this.cy)
-        this.layers[j].render(this.ctx)
+        this.layers[i].render(this.ctx)
         this.ctx.restore()
-      }
     }
 
     this.ctx.restore()
@@ -76,7 +77,7 @@ define(['util'], function(util) {
   }
   
   UI.prototype.getLayer = function layer(x, y, z) {
-    for (var i = 0; i < this.layers.length; i++) {
+    for (var i = 0, len = this.layers.length; i < len; i++) {
       if (this.layers[i].contains(x, y, z)) {
         return this.layers[i]
       }
@@ -140,6 +141,7 @@ define(['util'], function(util) {
       
       ctx.save()
       item.render(ctx)
+      item.postRender()
       ctx.restore()
     }
   }
@@ -180,7 +182,7 @@ define(['util'], function(util) {
   }
   
   function Item(options) {
-    this.img = options.img
+    this.sprite = options.sprite
     this.width = options.width
     this.height = options.height
     
@@ -188,13 +190,10 @@ define(['util'], function(util) {
     this.y = options.y
     this.z = options.z
     
-    this.dx = options.dx
-    this.dy = options.dy
+    this.sx = options.sx
+    this.sy = options.sy
     
-    this.setFrames(options.frames)
-    this.setDuration(options.duration)
-    
-    this.updateFtime()
+    this.animation = []
   }
   
   exports.Item = Item
@@ -203,7 +202,7 @@ define(['util'], function(util) {
     this.layer = layer
     this.ui = layer.ui
     this.setPosition(this.x, this.y, this.z)
-    this.setOffset(this.dx, this.dy)
+    this.setOffset(this.sx, this.sy)
   }
   
   Item.prototype.setPosition = function position(x, y, z) {
@@ -218,72 +217,108 @@ define(['util'], function(util) {
     this.ui._changed = true
   }
   
+  Item.prototype.setOffset = function offset(x, y) {
+    this.sx = x || 0
+    this.sy = y || 0
+  
+    this.ui._changed = true
+  }
+  
   Item.prototype.move = function move(cx, cy, cz) {
     this.setPosition(this.x + cx, this.y + cy, this.z + cz)
   }
   
-  Item.prototype.setMove = function move(cx, cy, cz) {
-    this.cx = cx
-    this.cy = cy
-    this.cz = cz
+  Item.prototype.render = function render(ctx) {
+    //
   }
   
-  Item.prototype.updateFtime = function ftime() {
-    if (this.duration > 0 && this.frames > 0)
-      this.ftime = +new Date + (this.duration / this.frames)
-    else
-      this.ftime = 0
+  Item.prototype.postRender = function postRender() {
+    if (this.animation.length === 0) return
+
+    while (this.animation.length !== 0) {
+      var first = this.animation[0]
+      first.init()
+
+      if (first.start + first.interval <= this.ui._timestamp) {
+        this.animation.shift()
+        first.end()
+        this.ui._changed = true
+        continue
+      }
+
+      first.run(this.ui._timestamp)
+      this.ui._changed = true
+      break
+    }
   }
   
-  Item.prototype.setFrames = function frames(frames) {
-    this.currentFrame = 0
-    this.frames = frames || 1
-  }
-  
-  Item.prototype.setOffset = function offset(x, y) {
-    this.dx = x || 0
-    this.dy = y || 0
-    
+  Item.prototype.animate = function animate(props, interval, callback) {
+    this.animation.push(new Animation(this, props, interval, callback))
     this.ui._changed = true
   }
   
-  Item.prototype.setDuration = function duration(duration) {
-    this.duration = duration
+  Item.prototype.reset = function reset() {
+    if (this.animation.length === 0) return
+
+    for (var i = 0, len = this.animation.length; i < len; i++) {
+      var a = this.animation[i]
+      a.init()
+      a.end()
+    }
+    this.animation = []
   }
   
-  Item.prototype.nextFrame = function next() {
-    if (this.duration) {
-      this.updateFtime()
-      if (this.cx || this.cy || this.cz) {
-        this.move(
-          this.cx / this.frames
-        , this.cy / this.frames
-        , this.cz / this.frames
-        )
-      }
-      
-      this.dx = this.width * this.currentFrame
+  function Animation(item, props, interval, callback) {
+    this.item = item
+
+    this.props = props
+    this.sprite = props.sprite
+    this.frames = props.frames
+    this.startX = this.startY = this.startZ = null
+    this.x = this.y = this.z = null
     
-      if (this.currentFrame === (this.frames - 1)) { // frames end
-        this.currentFrame = 0
-        this.cx = this.cy = this.cz = 0
-        this.duration = 0
-        this.callback()
-      } else {
-        ++this.currentFrame
-      } 
+    this.start = null
+    this.interval = interval
+
+    this.callback = callback
+  }
+
+  Animation.prototype.init = function init() {
+    if (this.start !== null) return
+
+    this.start = +new Date
+    this.x = this.startX = this.item.x
+    this.y = this.startY = this.item.y
+    this.z = this.startZ = this.item.z
+
+    var names = [ 'x', 'y', 'z' ]
+      , name
+
+    for (var i = 0; i < names.length; i++) {
+      name = names[i]
+      if (this.props.hasOwnProperty(name)) {
+        this[name] = this.props[name]
+      } else if (this.props.hasOwnProperty('d' + name)) {
+        this[name] += this.props['d' + name]
+      }
     }
   }
-  
-  Item.prototype.render = function render(ctx) {
-    if (this.duration) this.ui._changed = true
-    this.animate()
+
+  Animation.prototype.run = function run(timestamp) {
+    var percent = (timestamp - this.start) / this.interval
+      , frame = Math.round(percent * (this.frames - 1))
+    
+    this.item.setOffset(this.item.width * frame, this.props.sy)
+
+    this.item.setPosition(this.startX + (this.x - this.startX) * percent,
+                          this.startY + (this.y - this.startY) * percent,
+                          this.startZ + (this.z - this.startZ) * percent)
   }
-  
-  Item.prototype.animate = function animate() {
-    if ((+ new Date) > this.ftime) {
-      this.nextFrame()
-    }
+
+  Animation.prototype.end = function end() {
+    this.item.setPosition(this.x, this.y, this.z)
+    if (this.sprite) this.item.sprite = this.sprite
+    if (this.callback) this.callback()
   }
   
   Item.compare = function compare(a, b) {

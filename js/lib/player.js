@@ -1,44 +1,36 @@
 define(['util', 'ui'], function(util, ui) {
   var exports = {}
   
-  function Player(img) {
+  function Player(sprite) {
     ui.Item.call(this,{
-      img: img
+      sprite: sprite
     , width: 64
     , height: 64 
     , x: 0
     , y: 0
     , z: 0
-    , dx: 0
-    , dy: 192
-    , frames: 4
-    , duration: 0
+    , sx: 0
+    , sy: 192
     })
   }
   
   util.inherits(Player, ui.Item)
   
-  exports.create = function(img) {
-    return new Player(img)
+  exports.create = function(sprite) {
+    return new Player(sprite)
   }
   
-  Player.prototype.command = function command(cmd, msg, callback) {
+  Player.prototype.command = function command(cmd, options, callback) {
     if (cmd === 'move') {
-      if (msg === 'ne') {
-				this.setOffset(0, 0)
-        this.setMove(0, -1, 0)
-      } else if (msg === 'sw') {
-				this.setOffset(0, 192)
-        this.setMove(0, 1, 0)
-      } else if (msg === 'nw') {
-				this.setOffset(0, 128)
-        this.setMove(-1, 0, 0)
-      } else if (msg === 'se') {
-				this.setOffset(0, 64)
-        this.setMove(1, 0, 0)
-      }
-      this.callback = callback || function(){}
-			this.setDuration(500)
+      var sy = 0
+      if (options.dy > 0)
+        sy = 192
+      else if (options.dx > 0)
+        sy = 64
+      else if (options.dx < 0)
+        sy = 128
+      
+        this.animate({ dx: options.dx, dy: options.dy, dz: options.dz, sy: sy, frames: 4}, 300, callback)
     } else {
       callback()
       return
@@ -46,12 +38,10 @@ define(['util', 'ui'], function(util, ui) {
   }
   
   Player.prototype.render = function render(ctx) {
-    Player.__super__.prototype.render.call(this, ctx)
-    
     ctx.drawImage(
-        this.img
-      , this.dx
-      , this.dy
+        this.sprite
+      , this.sx
+      , this.sy
       , this.width
       , this.height
       , this.projection.x - 32

@@ -3,13 +3,12 @@ define(['util', 'ui'], function(util, ui) {
   
   function Block(options) {
     ui.Item.call(this,{
-      img: options.img
+      sprite: options.sprite
     , width: options.width
     , height: options.height
     , x: options.x
     , y: options.y
     , z: options.z
-    , duration: 0
     })
   }
   
@@ -20,10 +19,8 @@ define(['util', 'ui'], function(util, ui) {
   }
   
   Block.prototype.render = function render(ctx) {
-    //Block.__super__.prototype.render.call(this, ctx)
-    
     ctx.drawImage(
-        this.img
+        this.sprite
       , this.projection.x - 32
       , this.projection.y - 16
       , this.width
