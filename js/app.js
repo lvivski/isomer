@@ -22,8 +22,8 @@ require([
     
     game.setPlayer(player)
     
-    for (var row = 0; row < 25; row++) {
-      for (var col = 0; col < 25; col++) {
+    for (var row = 0; row < 10; row++) {
+      for (var col = 0; col < 10; col++) {
         game.add(block.create({
           sprite: sprites.tile
         , width: 64
