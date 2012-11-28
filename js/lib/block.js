@@ -1,8 +1,7 @@
-define(['util', 'ui'], function(util, ui) {
-  var exports = {}
+define(['util', 'item'], function(util, Item) {
   
   function Block(options) {
-    ui.Item.call(this,{
+    Item.call(this,{
       sprite: options.sprite
     , width: options.width
     , height: options.height
@@ -12,11 +11,7 @@ define(['util', 'ui'], function(util, ui) {
     })
   }
   
-  util.inherits(Block, ui.Item)
-  
-  exports.create = function(options) {
-    return new Block(options)
-  }
+  util.inherits(Block, Item)
   
   Block.prototype.render = function render(ctx) {
     ctx.drawImage(
@@ -28,5 +23,6 @@ define(['util', 'ui'], function(util, ui) {
     )
   }
   
-  return exports
+  return Block
+  
 })

@@ -1,8 +1,7 @@
-define(['util', 'ui'], function(util, ui) {
-  var exports = {}
+define(['util', 'item'], function(util, Item) {
   
   function Player(sprite) {
-    ui.Item.call(this,{
+    Item.call(this,{
       sprite: sprite
     , width: 64
     , height: 64 
@@ -14,11 +13,7 @@ define(['util', 'ui'], function(util, ui) {
     })
   }
   
-  util.inherits(Player, ui.Item)
-  
-  exports.create = function(sprite) {
-    return new Player(sprite)
-  }
+  util.inherits(Player, Item)
   
   Player.prototype.command = function command(cmd, options, callback) {
     if (cmd === 'move') {
@@ -30,7 +25,7 @@ define(['util', 'ui'], function(util, ui) {
       else if (options.dx < 0)
         sy = 128
       
-        this.animate({ dx: options.dx, dy: options.dy, dz: options.dz, sy: sy, frames: 4}, 300, callback)
+      this.animate({ dx: options.dx, dy: options.dy, dz: options.dz, sy: sy, frames: 4}, 300, callback)
     } else {
       callback()
       return
@@ -51,5 +46,6 @@ define(['util', 'ui'], function(util, ui) {
     )
   }
   
-  return exports
+  return Player
+
 })

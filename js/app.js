@@ -3,14 +3,14 @@ require.config({
 })
 
 require([
-  'ui'
+  'world'
 , 'player'
 , 'block'
 , 'sprites'
-], function(ui, player, block, sprites) {
+], function(World, Player, Block, sprites) {
   sprites.load(function(sprites){
     
-    game = ui.create({
+    var world = new World({
       canvas: document.getElementById('canvas'),
       cell: {
         width: 64,
@@ -18,13 +18,13 @@ require([
       }
     })
     
-    player = player.create(sprites.player)
+    var player = new Player(sprites.player)
     
-    game.setPlayer(player)
+    world.setPlayer(player)
     
     for (var row = 0; row < 10; row++) {
       for (var col = 0; col < 10; col++) {
-        game.add(block.create({
+        world.add(new Block({
           sprite: sprites.tile
         , width: 64
         , height: 32 
