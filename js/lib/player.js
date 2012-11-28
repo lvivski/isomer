@@ -7,7 +7,7 @@ define(['util', 'item'], function(util, Item) {
     , height: 64 
     , x: 0
     , y: 0
-    , z: 0
+    , z: 1
     , sx: 0
     , sy: 192
     })
@@ -40,7 +40,7 @@ define(['util', 'item'], function(util, Item) {
       , this.width
       , this.height
       , this.projection.x - 32
-      , this.projection.y - 58
+      , this.projection.y - 24
       , this.width
       , this.height
     )

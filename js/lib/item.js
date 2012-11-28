@@ -83,9 +83,20 @@ define(['animation'], function(Animation) {
     this.animation = []
   }
   
+  Item.prototype.covers = function covers(item) {
+    if (this === item) return false
+    if (this.z === item.z 
+      && (
+        (this.x >= item.x && this.y >= item.y
+        && Math.abs(this.x - item.x) < 2 && Math.abs(this.y - item.y) < 2)
+        || (item.y > this.y && (this.x - item.x === 1 || this.x === item.x) && item.y - this.y < 1)
+        || (item.x > this.x && (this.y - item.y === 1 || this.y === item.y) && item.x - this.x < 1))
+      )
+      return true
+  }
+  
   Item.compare = function compare(a, b) {
-    if (a.x > b.x || a.y > b.y) return -1
-    if (a.x < b.x || a.y < b.y) return 1
+    return a.x + a.y - b.x - b.y
   }
   
   return Item

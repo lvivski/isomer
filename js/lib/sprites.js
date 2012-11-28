@@ -3,7 +3,7 @@ define(function() {
 
   var urls = {
         player: 'img/player.png'
-      , tile: 'img/tile.png'
+      , blocks: 'img/blocks.png'
       }
     , ids = Object.keys(urls)
     , sprites = {}

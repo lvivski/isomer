@@ -1,8 +1,8 @@
 define(['item'], function(Item) {
   
-  function Layer(options) {
+  function Layer(z) {
     this.items = []
-    this.z = options.z
+    this.z = z
 
     this.map = {}
 
@@ -22,11 +22,13 @@ define(['item'], function(Item) {
   }
   
   Layer.prototype.render = function render(ctx) {
-    var item;
+    var item
     for (var i = 0, len = this.items.length; i < len; i++) {
       item = this.items[i]
-      
       ctx.save()
+      if (item.covers(this.ui.player)) {
+        ctx.globalAlpha = 0.4
+      }
       item.render(ctx)
       item.postRender()
       ctx.restore()
@@ -67,6 +69,17 @@ define(['item'], function(Item) {
     }
     
     this.items.splice(middle, 0, item)
+  }
+  
+  Layer.prototype.sort = function sort() {
+    this.items = this.items.sort(Item.compare)
+  }
+  
+  Layer.compare = function compare(a, b) {
+    if (a.z > b.z) return -1
+    if (a.z < b.z) return 1
+
+    return a.x + a.y - b.x - b.y
   }
   
   return Layer

@@ -39,12 +39,14 @@ define(function() {
   Animation.prototype.run = function run(timestamp) {
     var percent = (timestamp - this.start) / this.interval
       , frame = Math.round(percent * (this.frames - 1))
+      
+    percent < 0 && (percent = 0)
     
     this.item.setOffset(this.item.width * frame, this.props.sy)
 
-    this.item.setPosition(this.startX + (this.x - this.startX) * percent,
-                          this.startY + (this.y - this.startY) * percent,
-                          this.startZ + (this.z - this.startZ) * percent)
+    this.item.setPosition(this.startX + (this.x - this.startX) * percent
+                         ,this.startY + (this.y - this.startY) * percent
+                         ,this.startZ + (this.z - this.startZ) * percent)
   }
 
   Animation.prototype.end = function end() {

@@ -37,7 +37,7 @@ define(['layer'], function(Layer) {
   World.prototype.project = function project(x, y, z) {
     return {
       x: Math.round((x - y) * this.cell.width / 2)
-    , y: Math.round((1.23 * z + (x + y) / 2) * this.cell.height)
+    , y: Math.round((-1 * z + (x + y) / 2) * this.cell.height)
     }
   }
   
@@ -55,10 +55,11 @@ define(['layer'], function(Layer) {
     this.cy = Math.round(this.height / 2 - this.projection.y)
       
     for (var i = 0, len = this.layers.length; i < len; i++) {
-        this.ctx.save()
-        this.ctx.translate(this.cx, this.cy)
-        this.layers[i].render(this.ctx)
-        this.ctx.restore()
+      this.layers[i].sort()
+      this.ctx.save()
+      this.ctx.translate(this.cx, this.cy)
+      this.layers[i].render(this.ctx)
+      this.ctx.restore()
     }
 
     this.ctx.restore()
@@ -98,7 +99,8 @@ define(['layer'], function(Layer) {
     this.projection = this.project(x, y, z)
     
     if (this.layers.length === 0) {
-      this.addLayer(new Layer(this.center))
+      this.addLayer(new Layer(0))
+      this.addLayer(new Layer(1))
     }
   }
   
