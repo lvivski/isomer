@@ -1,5 +1,5 @@
 define(function() {
-  
+
   function Animation(item, props, interval, callback) {
     this.item = item
 
@@ -8,7 +8,7 @@ define(function() {
     this.frames = props.frames
     this.startX = this.startY = this.startZ = null
     this.x = this.y = this.z = null
-    
+
     this.start = null
     this.interval = interval
 
@@ -39,9 +39,9 @@ define(function() {
   Animation.prototype.run = function run(timestamp) {
     var percent = (timestamp - this.start) / this.interval
       , frame = Math.round(percent * (this.frames - 1))
-      
+
     percent < 0 && (percent = 0)
-    
+
     this.item.setOffset(this.item.width * frame, this.props.sy)
 
     this.item.setPosition(this.startX + (this.x - this.startX) * percent
@@ -54,7 +54,7 @@ define(function() {
     if (this.sprite) this.item.sprite = this.sprite
     if (this.callback) this.callback()
   }
-  
+
   return Animation
 
 })

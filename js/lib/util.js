@@ -2,7 +2,7 @@ define(function() {
   var exports = {}
   function inherits(a, b) {
     a.__super__ = b
-    
+
     a.prototype = Object.create(b.prototype, {
       constructor: {
         value: a
@@ -12,7 +12,7 @@ define(function() {
       }
     })
   }
-  
+
   exports.inherits = inherits
 
   return exports

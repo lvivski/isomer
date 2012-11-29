@@ -9,7 +9,7 @@ define(function() {
     , sprites = {}
 
   var length = ids.length
-  
+
   ids.forEach(function(id) {
     var img = new Image()
 
@@ -17,20 +17,20 @@ define(function() {
       sprites[id] = this
       if (--length === 0) return finish()
     }
-    
+
     img.src = urls[id]
   })
-  
+
   var loaded = false
     , callbacks = []
-  
+
   function finish() {
     loaded = true
-    
+
     callbacks.forEach(function(callback) {
       callback(sprites)
     })
-    
+
     callbacks = null
   };
 

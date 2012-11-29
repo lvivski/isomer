@@ -1,5 +1,5 @@
 define(['util', 'item'], function(util, Item) {
-  
+
   function Block(options) {
     Item.call(this,{
       sprite: options.sprite
@@ -12,9 +12,9 @@ define(['util', 'item'], function(util, Item) {
     , sy: options.sy || 0
     })
   }
-  
+
   util.inherits(Block, Item)
-  
+
   Block.prototype.render = function render(ctx) {
     ctx.drawImage(
         this.sprite
@@ -28,7 +28,7 @@ define(['util', 'item'], function(util, Item) {
       , this.height
     )
   }
-  
+
   return Block
-  
+
 })
