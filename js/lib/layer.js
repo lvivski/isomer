@@ -6,31 +6,38 @@ define(['item'], function(Item) {
 
     this.map = {}
 
-    this.ui = null
+    this.world = null
   }
 
-  Layer.prototype.init = function init(ui) {
-    this.ui = ui
+  Layer.prototype.init = function init(world) {
+    this.world = world
   }
 
-  Layer.prototype.has = function has(item) {
-    return this.contains(item.x, item.y, item.z)
+  Layer.prototype.has = function has(it) {
+    for(var i = 0, len = this.items.length, item; i < len; i++) {
+      if (it === item)
+        return true
+    }
   }
 
   Layer.prototype.contains = function contains(x, y, z) {
-    return this.z === z
+    for(var i = 0, len = this.items.length, item; i < len; i++) {
+      item = this.items[i]
+      if (item.x === x && item.y === y && item.z === z && item !== this.world.player)
+        return true
+    }
   }
 
   Layer.prototype.render = function render(ctx) {
     for (var i = 0, len = this.items.length, item; i < len; i++) {
       item = this.items[i]
-      if (!item._visible && !item.neighbors(this.ui.player)) {
+      if (!item._visible && !item.neighbors(this.world.player)) {
         continue
       } else {
         item._visible = true
       }
       ctx.save()
-      if (item.covers(this.ui.player)) {
+      if (item.covers(this.world.player)) {
         ctx.globalAlpha = 0.4
       }
       item.render(ctx)

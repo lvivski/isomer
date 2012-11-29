@@ -19,7 +19,7 @@ define(['animation'], function(Animation) {
 
   Item.prototype.init = function init(layer) {
     this.layer = layer
-    this.ui = layer.ui
+    this.world = layer.world
     this.setPosition(this.x, this.y, this.z)
     this.setOffset(this.sx, this.sy)
   }
@@ -29,18 +29,18 @@ define(['animation'], function(Animation) {
     this.y = y || 0
     this.z = z || 0
 
-    this.ui.handleMove(this)
+    this.world.handleMove(this)
 
-    this.projection = this.ui.project(this.x, this.y, this.z)
+    this.projection = this.world.project(this.x, this.y, this.z)
 
-    this.ui._changed = true
+    this.world._changed = true
   }
 
   Item.prototype.setOffset = function offset(x, y) {
     this.sx = x || 0
     this.sy = y || 0
 
-    this.ui._changed = true
+    this.world._changed = true
   }
 
   Item.prototype.move = function move(cx, cy, cz) {
@@ -56,22 +56,22 @@ define(['animation'], function(Animation) {
       var first = this.animation[0]
       first.init()
 
-      if (first.start + first.interval <= this.ui._timestamp) {
+      if (first.start + first.interval <= this.world._timestamp) {
         this.animation.shift()
         first.end()
-        this.ui._changed = true
+        this.world._changed = true
         continue
       }
 
-      first.run(this.ui._timestamp)
-      this.ui._changed = true
+      first.run(this.world._timestamp)
+      this.world._changed = true
       break
     }
   }
 
   Item.prototype.animate = function animate(props, interval, callback) {
     this.animation.push(new Animation(this, props, interval, callback))
-    this.ui._changed = true
+    this.world._changed = true
   }
 
   Item.prototype.reset = function reset() {

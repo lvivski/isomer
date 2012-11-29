@@ -26,11 +26,9 @@ define(['util', 'item'], function(util, Item) {
         sy = 64
       else if (options.dx < 0)
         sy = 128
-
       this.animate({ dx: options.dx, dy: options.dy, dz: options.dz, sy: sy, frames: 4}, 300, callback)
     } else {
       callback()
-      return
     }
   }
 

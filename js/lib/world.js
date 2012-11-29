@@ -66,15 +66,15 @@ define(['layer'], function(Layer) {
   }
 
   World.prototype.add = function add(item) {
-    var layer = this.getLayer(item.x, item.y, item.z)
+    var layer = this.getLayer(item)
     if (!layer) return
 
     layer.add(item)
   }
 
-  World.prototype.getLayer = function layer(x, y, z) {
+  World.prototype.getLayer = function layer(item) {
     for (var i = 0, len = this.layers.length; i < len; i++) {
-      if (this.layers[i].contains(x, y, z)) {
+      if (this.layers[i].z === item.z) {
         return this.layers[i]
       }
     }
@@ -99,8 +99,8 @@ define(['layer'], function(Layer) {
     this.projection = this.project(x, y, z)
 
     if (this.layers.length === 0) {
-      this.addLayer(new Layer(0))
-      this.addLayer(new Layer(1))
+      this.addLayer(new Layer(this.player.z - 1))
+      this.addLayer(new Layer(this.player.z))
     }
   }
 

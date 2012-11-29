@@ -21,33 +21,48 @@ require([
     var player = new Player(sprites.player)
 
     world.setPlayer(player)
+    
+    var map ="\
+0001011000\
+1101000000\
+0001011000\
+1011010000\
+1000010000\
+1111000000\
+0000000000\
+0000000000\
+0000000000\
+0000000000\
+"
 
-    for (var row = 0; row < 26; row++) {
-      for (var col = 0; col < 26; col++) {
+    for (var i = 0, len = map.length, type, x, y; i < len; i++ ) {
+      x = i % 10
+      y = Math.floor(i / 10)
+      type = map[i]
+      
+      world.add(new Block({
+        sprite: sprites.blocks
+      , width: 64
+      , height: 64
+      , x: x
+      , y: y
+      , z: player.z - 1
+      , sx: 256
+      , sy: 192
+      }))
+      
+      if (type === '1') {
         world.add(new Block({
           sprite: sprites.blocks
         , width: 64
         , height: 64
-        , x: row
-        , y: col
-        , z: 0
-        , sx: 256
-        , sy: 192
+        , x: x
+        , y: y
+        , z: player.z
+        , sx: 320
+        , sy: 320
         }))
-
-        if ((!(row%5) || !(col%5)) && row%4 && col%4) {
-          world.add(new Block({
-            sprite: sprites.blocks
-          , width: 64
-          , height: 64
-          , x: row
-          , y: col
-          , z: 1
-          , sx: 320
-          , sy: 320
-          }))
-        }
-      }
+      } 
     }
 
     var moving = false
