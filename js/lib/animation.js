@@ -25,7 +25,7 @@ define(function() {
 
     var names = [ 'x', 'y', 'z' ]
 
-    for (var i = 0; i < names.length, name; i++) {
+    for (var i = 0, len = names.length, name; i < names.length; i++) {
       name = names[i]
       if (this.props.hasOwnProperty(name)) {
         this[name] = this.props[name]
