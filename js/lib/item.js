@@ -12,7 +12,7 @@ define(['animation'], function(Animation) {
     this.sx = options.sx
     this.sy = options.sy
 
-    this.animation = []
+    this.animations = []
 
     this._visible = false
   }
@@ -20,11 +20,11 @@ define(['animation'], function(Animation) {
   Item.prototype.init = function init(layer) {
     this.layer = layer
     this.world = layer.world
-    this.setPosition(this.x, this.y, this.z)
-    this.setOffset(this.sx, this.sy)
+    this.position(this.x, this.y, this.z)
+    this.offset(this.sx, this.sy)
   }
 
-  Item.prototype.setPosition = function position(x, y, z) {
+  Item.prototype.position = function position(x, y, z) {
     this.x = x || 0
     this.y = y || 0
     this.z = z || 0
@@ -36,7 +36,7 @@ define(['animation'], function(Animation) {
     this.world._changed = true
   }
 
-  Item.prototype.setOffset = function offset(x, y) {
+  Item.prototype.offset = function offset(x, y) {
     this.sx = x || 0
     this.sy = y || 0
 
@@ -44,47 +44,9 @@ define(['animation'], function(Animation) {
   }
 
   Item.prototype.move = function move(cx, cy, cz) {
-    this.setPosition(this.x + cx, this.y + cy, this.z + cz)
+    this.position(this.x + cx, this.y + cy, this.z + cz)
   }
-
-  Item.prototype.render = function render(ctx) {}
-
-  Item.prototype.postRender = function postRender() {
-    if (this.animation.length === 0) return
-
-    while (this.animation.length !== 0) {
-      var first = this.animation[0]
-      first.init()
-
-      if (first.start + first.interval <= this.world._timestamp) {
-        this.animation.shift()
-        first.end()
-        this.world._changed = true
-        continue
-      }
-
-      first.run(this.world._timestamp)
-      this.world._changed = true
-      break
-    }
-  }
-
-  Item.prototype.animate = function animate(props, interval, callback) {
-    this.animation.push(new Animation(this, props, interval, callback))
-    this.world._changed = true
-  }
-
-  Item.prototype.reset = function reset() {
-    if (this.animation.length === 0) return
-
-    for (var i = 0, len = this.animation.length, a; i < len; i++) {
-      a = this.animation[i]
-      a.init()
-      a.end()
-    }
-    this.animation = []
-  }
-
+  
   Item.prototype.covers = function covers(item) {
     if (this === item) return false
     if (this.z === item.z
@@ -100,6 +62,44 @@ define(['animation'], function(Animation) {
   Item.prototype.neighbors = function neighbors(item) {
     if (abs(this.z - item.z) < 3 && abs(this.x - item.x) < 3 && abs(this.y - item.y) < 3)
       return true
+  }
+
+  Item.prototype.render = function render(ctx) {}
+
+  Item.prototype.animate = function animate(props, interval, callback) {
+    this.animations.push(new Animation(this, props, interval, callback))
+    this.world._changed = true
+  }
+  
+  Item.prototype.animation = function animation() {
+    if (this.animations.length === 0) return
+
+    while (this.animations.length !== 0) {
+      var first = this.animations[0]
+      first.init()
+
+      if (first.start + first.interval <= this.world._timestamp) {
+        this.animations.shift()
+        first.end()
+        this.world._changed = true
+        continue
+      }
+
+      first.run(this.world._timestamp)
+      this.world._changed = true
+      break
+    }
+  }
+
+  Item.prototype.reset = function reset() {
+    if (this.animation.length === 0) return
+
+    for (var i = 0, len = this.animation.length, a; i < len; i++) {
+      a = this.animation[i]
+      a.init()
+      a.end()
+    }
+    this.animation = []
   }
 
   Item.compare = function compare(a, b) {

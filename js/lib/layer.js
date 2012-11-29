@@ -18,9 +18,10 @@ define(['item'], function(Item) {
   }
 
   Layer.prototype.contains = function contains(x, y, z) {
+    if (this.z !== z) return false
     for(var i = 0, len = this.items.length, item; i < len; i++) {
       item = this.items[i]
-      if (item.x === x && item.y === y && item.z === z)
+      if (item.x === x && item.y === y)
         return true
     }
   }
@@ -38,7 +39,7 @@ define(['item'], function(Item) {
         ctx.globalAlpha = 0.5
       }
       item.render(ctx)
-      item.postRender()
+      item.animation()
       ctx.restore()
     }
   }
