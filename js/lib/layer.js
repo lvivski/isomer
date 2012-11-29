@@ -13,17 +13,14 @@ define(['item'], function(Item) {
     this.world = world
   }
 
-  Layer.prototype.has = function has(it) {
-    for(var i = 0, len = this.items.length, item; i < len; i++) {
-      if (it === item)
-        return true
-    }
+  Layer.prototype.has = function has(item) {
+    return this.items.indexOf(item) >= 0
   }
 
   Layer.prototype.contains = function contains(x, y, z) {
     for(var i = 0, len = this.items.length, item; i < len; i++) {
       item = this.items[i]
-      if (item.x === x && item.y === y && item.z === z && item !== this.world.player)
+      if (item.x === x && item.y === y && item.z === z)
         return true
     }
   }
