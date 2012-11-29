@@ -24,9 +24,8 @@ define(function() {
     this.z = this.startZ = this.item.z
 
     var names = [ 'x', 'y', 'z' ]
-      , name
 
-    for (var i = 0; i < names.length; i++) {
+    for (var i = 0; i < names.length, name; i++) {
       name = names[i]
       if (this.props.hasOwnProperty(name)) {
         this[name] = this.props[name]
