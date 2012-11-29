@@ -37,7 +37,7 @@ define(['layer'], function(Layer) {
   World.prototype.project = function project(x, y, z) {
     return {
       x: Math.round((x - y) * this.cell.width / 2)
-    , y: Math.round((-1 * z + (x + y) / 2) * this.cell.height)
+    , y: Math.round(((x + y) / 2 - z) * this.cell.height)
     }
   }
 

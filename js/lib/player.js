@@ -45,7 +45,7 @@ define(['util', 'item'], function(util, Item) {
       , this.height
     )
   }
-  
+
   Player.prototype.animate = function animate(props, interval, callback) {
     if (this.layer.contains(this.x + props.dx, this.y + props.dy, this.z + props.dz)) {
       props.dx = props.dy = props.dz = 0

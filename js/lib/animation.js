@@ -52,7 +52,7 @@ define(function() {
   Animation.prototype.end = function end() {
     this.item.setPosition(this.x, this.y, this.z)
     if (this.sprite) this.item.sprite = this.sprite
-    if (this.callback) this.callback()
+    this.callback && this.callback()
   }
 
   return Animation

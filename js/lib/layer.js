@@ -35,7 +35,7 @@ define(['item'], function(Item) {
       }
       ctx.save()
       if (item.covers(this.world.player)) {
-        ctx.globalAlpha = 0.4
+        ctx.globalAlpha = 0.5
       }
       item.render(ctx)
       item.postRender()
@@ -49,34 +49,8 @@ define(['item'], function(Item) {
   }
 
   Layer.prototype.insert = function insert(item) {
-    if (this.items.length === 0) {
-      this.items.push(item)
-      return
-    }
-
-    var i = 0
-      , j = this.items.length - 1
-      , middle = 0
-      , cmp
-
-    while (i <= j) {
-      middle = (i + j) >> 1
-      cmp = Item.compare(item, this.items[middle])
-
-      if (cmp == 0) {
-        break
-      } else if (cmp < 0) {
-        j = middle - 1
-      } else {
-        i = middle + 1
-      }
-    }
-
-    if (cmp > 0) {
-      middle++
-    }
-
-    this.items.splice(middle, 0, item)
+    this.items.push(item)
+    this.sort()
   }
 
   Layer.prototype.sort = function sort() {
