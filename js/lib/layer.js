@@ -25,6 +25,11 @@ define(['item'], function(Item) {
     var item
     for (var i = 0, len = this.items.length; i < len; i++) {
       item = this.items[i]
+      if (!item._visible && !item.neighbors(this.ui.player)) {
+	continue
+      } else {
+	item._visible = true
+      }
       ctx.save()
       if (item.covers(this.ui.player)) {
         ctx.globalAlpha = 0.4

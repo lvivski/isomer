@@ -11,6 +11,8 @@ define(['util', 'item'], function(util, Item) {
     , sx: 0
     , sy: 192
     })
+
+    this._visible = true
   }
   
   util.inherits(Player, Item)
