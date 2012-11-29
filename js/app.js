@@ -22,8 +22,8 @@ require([
 
     world.setPlayer(player)
 
-    for (var row = 0; row < 10; row++) {
-      for (var col = 0; col < 10; col++) {
+    for (var row = 0; row < 26; row++) {
+      for (var col = 0; col < 26; col++) {
         world.add(new Block({
           sprite: sprites.blocks
         , width: 64
@@ -35,7 +35,7 @@ require([
         , sy: 192
         }))
 
-        if (!(row%5) || !(col%5)) {
+        if ((!(row%5) || !(col%5)) && row%4 && col%4) {
           world.add(new Block({
             sprite: sprites.blocks
           , width: 64
