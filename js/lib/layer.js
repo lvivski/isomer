@@ -60,8 +60,7 @@ define(['item'], function(Item) {
   Layer.compare = function compare(a, b) {
     if (a.z > b.z) return -1
     if (a.z < b.z) return 1
-
-    return a.x + a.y - b.x - b.y
+    return 0
   }
 
   return Layer

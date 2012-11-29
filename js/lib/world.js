@@ -55,7 +55,7 @@ define(['layer'], function(Layer) {
     this.cy = Math.round(this.height / 2 - this.projection.y)
 
     for (var i = 0, len = this.layers.length; i < len; i++) {
-      this.layers[i].sort()
+      Math.random() > 0.75 && this.layers[i].sort()
       this.ctx.save()
       this.ctx.translate(this.cx, this.cy)
       this.layers[i].render(this.ctx)
