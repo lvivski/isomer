@@ -13,8 +13,11 @@ define(['animation'], function(Animation) {
     this.sy = options.sy
 
     this.animations = []
+    
+    this.projection = {}
+    this.bound = {}
 
-    this._visible = false
+    this._discovered = false
   }
 
   Item.prototype.init = function init(layer) {
@@ -32,8 +35,26 @@ define(['animation'], function(Animation) {
     this.world.handleMove(this)
 
     this.projection = this.world.project(this.x, this.y, this.z)
+    this.bound = this.bounding()
 
     this.world._changed = true
+  }
+  
+  Item.prototype.bounding = function bounding() {
+    var hw = this.width / 2
+      , hh = this.height / 2
+      
+    return {
+      x: this.projection.x - hw
+    , y: this.projection.y - hh
+    , right: this.projection.x + hw
+    , bottom: this.projection.y + hh
+    }
+  }
+  
+  Item.prototype.in = function (lx, ly, rx, ry) {
+    return this.bound.right >= lx && this.bound.x <= rx
+        && this.bound.bottom >= ly && this.bound.y <= ry
   }
 
   Item.prototype.offset = function offset(x, y) {
@@ -48,13 +69,14 @@ define(['animation'], function(Animation) {
   }
   
   Item.prototype.covers = function covers(item) {
-    if (Item.compare(this, item) <= 0 || this === item) return false
-    if (this.z === item.z
-      && (
-	      (this.x >= item.x && this.y >= item.y && this.x - item.x < 2 && this.y - item.y < 2)
-        || (item.y > this.y && (this.x - item.x === 1 || this.x === item.x) && item.y - this.y < 1)
-        || (item.x > this.x && (this.y - item.y === 1 || this.y === item.y) && item.x - this.x < 1))
-      )
+    if (this.z !== item.z || Item.compare(this, item) <= 0 || this === item)
+      return false
+    var dx = this.projection.x - item.projection.x
+      , dy = this.projection.y - item.projection.y
+      , radius = dx * dx + dy * dy
+
+      if (radius > 3000)
+        return false
       return true
   }
 

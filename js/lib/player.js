@@ -12,7 +12,7 @@ define(['util', 'item'], function(util, Item) {
     , sy: 192
     })
 
-    this._visible = true
+    this._discovered = true
   }
 
   util.inherits(Player, Item)
@@ -44,13 +44,6 @@ define(['util', 'item'], function(util, Item) {
       , this.width
       , this.height
     )
-  }
-
-  Player.prototype.animate = function animate(props, interval, callback) {
-    if (this.layer.get(this.x + props.dx, this.y + props.dy, this.z + props.dz)) {
-      props.dx = props.dy = props.dz = 0
-    }
-    Player.__super__.prototype.animate.call(this, props, interval, callback)
   }
 
   return Player

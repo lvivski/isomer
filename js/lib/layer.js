@@ -18,12 +18,18 @@ define(['item'], function(Item) {
   }
 
   Layer.prototype.render = function render(ctx) {
+    var lx = -this.world.cx
+      , rx = -this.world.cx + this.world.width
+      , ly = -this.world.cy
+      , ry = -this.world.cy + this.world.height
+      
     for (var i = 0, len = this.items.length, item; i < len; i++) {
       item = this.items[i]
-      if (!item._visible && !item.neighbors(this.world.player)) {
+      if (!item.in(lx, ly, rx, ry)) continue
+      if (!item._discovered && !item.neighbors(this.world.player)) {
         continue
       } else {
-        item._visible = true
+        item._discovered = true
       }
       ctx.globalAlpha = 1
       if (item.covers(this.world.player)) {
@@ -45,16 +51,20 @@ define(['item'], function(Item) {
       return
     }
     
-    var middle = search(item, this.items, Item.compare)
+    var pos = search(item, this.items, Item.compare)
 
-    this.items.splice(middle, 0, item)
+    this.items.splice(pos, 0, item)
   }
   
   Layer.prototype.get = function get(x, y, z) {
     if (this.items.length === 0) return false
     
-    for (var i = 0, item; i < this.items.length; i++) {
+    // var cell = { x: x, y: y, z: z }
+      // , pos = search(cell, this.items, Item.compare)
+    for (var i = 0, item, cmp; i < this.items.length; i++) {
       item = this.items[i]
+      // cmp = Item.compare(cell, item)
+      // if (cmp > 0) break
       if (x === item.x && y === item.y && z === item.z) return item
     }
 
@@ -78,7 +88,7 @@ define(['item'], function(Item) {
 
   return Layer
   
-  function search(needle, stack, compare) {
+  function search(needle, stack, comparator) {
     var i = 0
       , j = stack.length - 1
       , middle = 0
@@ -86,18 +96,17 @@ define(['item'], function(Item) {
 
     while (i <= j) {
       middle = (i + j) >> 1
-      cmp = compare(needle, stack[middle])
-      
-      if (cmp === 0) {
-        break
-      } else if (cmp < 0) {
+      cmp = comparator(stack[middle], needle)
+      if (cmp < 0) {
+        i = middle + 1
+      } else if (cmp > 0) {
         j = middle - 1
       } else {
-        i = middle + 1
+        break
       }
     }
 
-    if (cmp > 0) {
+    if (cmp < 0) {
       middle++
     }
     

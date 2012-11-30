@@ -33,6 +33,13 @@ define(function() {
         this[name] += this.props['d' + name]
       }
     }
+    
+    if (this.item.layer.get(this.x, this.y, this.z)) {
+      this.x = this.startX
+      this.y = this.startY
+      this.z = this.startZ
+      // this.interval = 1 // no sprite frames
+    }
   }
 
   Animation.prototype.run = function run() {
