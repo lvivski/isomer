@@ -1,4 +1,6 @@
 define(['animation'], function(Animation) {
+  
+  var abs = Math.abs
 
   function Item(options) {
     this.sprite = options.sprite
@@ -120,9 +122,5 @@ define(['animation'], function(Animation) {
   }
 
   return Item
-
-  function abs(x) {
-    return Math.abs(x)
-  }
 
 })
