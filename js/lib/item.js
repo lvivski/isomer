@@ -13,9 +13,6 @@ define(['animation'], function(Animation) {
     this.sy = options.sy
 
     this.animations = []
-    
-    this.projection = {}
-    this.bound = {}
 
     this._discovered = false
   }
@@ -28,33 +25,23 @@ define(['animation'], function(Animation) {
   }
 
   Item.prototype.position = function position(x, y, z) {
-    this.x = x || 0
-    this.y = y || 0
-    this.z = z || 0
-
-    this.world.handleMove(this)
+    this.x = x
+    this.y = y
+    this.z = z
 
     this.projection = this.world.project(this.x, this.y, this.z)
-    this.bound = this.bounding()
 
+    this.world.handleMove(this)
     this.world._changed = true
   }
-  
-  Item.prototype.bounding = function bounding() {
-    var hw = this.width / 2
-      , hh = this.height / 2
-      
-    return {
-      x: this.projection.x - hw
-    , y: this.projection.y - hh
-    , right: this.projection.x + hw
-    , bottom: this.projection.y + hh
-    }
-  }
-  
+
   Item.prototype.in = function (lx, ly, rx, ry) {
-    return this.bound.right >= lx && this.bound.x <= rx
-        && this.bound.bottom >= ly && this.bound.y <= ry
+    var w = this.width
+      , h = this.height
+      , center = this.projection
+
+    return center.x + w >= lx && center.x - w <= rx
+        && center.y + h >= ly && center.y - h <= ry
   }
 
   Item.prototype.offset = function offset(x, y) {
@@ -64,20 +51,21 @@ define(['animation'], function(Animation) {
     this.world._changed = true
   }
 
-  Item.prototype.move = function move(cx, cy, cz) {
-    this.position(this.x + cx, this.y + cy, this.z + cz)
+  Item.prototype.move = function move(dx, dy, dz) {
+    this.position(this.x + dx, this.y + dy, this.z + dz)
   }
-  
+
   Item.prototype.covers = function covers(item) {
     if (this.z !== item.z || Item.compare(this, item) <= 0 || this === item)
       return false
+
     var dx = this.projection.x - item.projection.x
       , dy = this.projection.y - item.projection.y
       , radius = dx * dx + dy * dy
 
-      if (radius > 3000)
-        return false
-      return true
+    if (radius > 3000)
+      return false
+    return true
   }
 
   Item.prototype.neighbors = function neighbors(item) {
@@ -91,7 +79,7 @@ define(['animation'], function(Animation) {
     this.animations.push(new Animation(this, props, interval, callback))
     this.world._changed = true
   }
-  
+
   Item.prototype.animation = function animation() {
     if (this.animations.length === 0) return
 
@@ -122,7 +110,7 @@ define(['animation'], function(Animation) {
     }
     this.animation = []
   }
-  
+
   Item.prototype.remove = function remove() {
     this.layer.remove(this)
   }

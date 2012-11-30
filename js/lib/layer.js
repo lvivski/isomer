@@ -22,7 +22,7 @@ define(['item'], function(Item) {
       , rx = -this.world.cx + this.world.width
       , ly = -this.world.cy
       , ry = -this.world.cy + this.world.height
-      
+
     for (var i = 0, len = this.items.length, item; i < len; i++) {
       item = this.items[i]
       if (!item.in(lx, ly, rx, ry)) continue
@@ -50,15 +50,15 @@ define(['item'], function(Item) {
       this.items.push(item)
       return
     }
-    
+
     var pos = search(item, this.items, Item.compare)
 
     this.items.splice(pos, 0, item)
   }
-  
+
   Layer.prototype.get = function get(x, y, z) {
     if (this.items.length === 0) return false
-    
+
     // var cell = { x: x, y: y, z: z }
       // , pos = search(cell, this.items, Item.compare)
     for (var i = 0, item, cmp; i < this.items.length; i++) {
@@ -70,7 +70,7 @@ define(['item'], function(Item) {
 
     return false
   }
-  
+
   Layer.prototype.remove = function remove(item) {
     var index = this.items.indexOf(item)
     if (index !== -1) this.items.splice(index, 1)
@@ -87,7 +87,7 @@ define(['item'], function(Item) {
   }
 
   return Layer
-  
+
   function search(needle, stack, comparator) {
     var i = 0
       , j = stack.length - 1
@@ -109,7 +109,7 @@ define(['item'], function(Item) {
     if (cmp < 0) {
       middle++
     }
-    
+
     return middle
   }
 })
