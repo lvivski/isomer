@@ -35,9 +35,10 @@ require([
 0000000001\
 "
 
+    var size = 10
     for (var i = 0, len = map.length, type, x, y; i < len; i++ ) {
-      x = i % 10
-      y = Math.floor(i / 10)
+      x = i % size
+      y = Math.floor(i / size)
       type = map[i]
       
       world.add(new Block({

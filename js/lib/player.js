@@ -47,7 +47,7 @@ define(['util', 'item'], function(util, Item) {
   }
 
   Player.prototype.animate = function animate(props, interval, callback) {
-    if (this.layer.contains(this.x + props.dx, this.y + props.dy, this.z + props.dz)) {
+    if (this.layer.get(this.x + props.dx, this.y + props.dy, this.z + props.dz)) {
       props.dx = props.dy = props.dz = 0
     }
     Player.__super__.prototype.animate.call(this, props, interval, callback)

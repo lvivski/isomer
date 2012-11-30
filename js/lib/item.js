@@ -48,11 +48,10 @@ define(['animation'], function(Animation) {
   }
   
   Item.prototype.covers = function covers(item) {
-    if (this === item) return false
+    if (Item.compare(this, item) <= 0 || this === item) return false
     if (this.z === item.z
       && (
-        (this.x >= item.x && this.y >= item.y
-        && abs(this.x - item.x) < 2 && abs(this.y - item.y) < 2)
+	      (this.x >= item.x && this.y >= item.y && this.x - item.x < 2 && this.y - item.y < 2)
         || (item.y > this.y && (this.x - item.x === 1 || this.x === item.x) && item.y - this.y < 1)
         || (item.x > this.x && (this.y - item.y === 1 || this.y === item.y) && item.x - this.x < 1))
       )
@@ -60,7 +59,7 @@ define(['animation'], function(Animation) {
   }
 
   Item.prototype.neighbors = function neighbors(item) {
-    if (abs(this.z - item.z) < 3 && abs(this.x - item.x) < 3 && abs(this.y - item.y) < 3)
+    if (abs(this.x - item.x) < 3 && abs(this.y - item.y) < 3)
       return true
   }
 
@@ -78,14 +77,14 @@ define(['animation'], function(Animation) {
       var first = this.animations[0]
       first.init()
 
-      if (first.start + first.interval <= this.world._timestamp) {
+      if (first.start + first.interval <= Date.now()) {
         this.animations.shift()
         first.end()
         this.world._changed = true
         continue
       }
 
-      first.run(this.world._timestamp)
+      first.run()
       this.world._changed = true
       break
     }
@@ -100,6 +99,10 @@ define(['animation'], function(Animation) {
       a.end()
     }
     this.animation = []
+  }
+  
+  Item.prototype.remove = function remove() {
+    this.layer.remove(this)
   }
 
   Item.compare = function compare(a, b) {

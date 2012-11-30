@@ -45,21 +45,16 @@ define(['layer'], function(Layer) {
     if (!this._changed) return
     this._changed = false
 
-    this._timestamp = +new Date
-
-    this.ctx.save()
-    this.ctx.fillStyle = '#000'
-    this.ctx.fillRect(0, 0, this.width, this.height)
-
     this.cx = Math.round(this.width / 2 - this.projection.x)
     this.cy = Math.round(this.height / 2 - this.projection.y)
 
+    this.ctx.save()
+    this.ctx.fillRect(0, 0, this.width, this.height)
+    this.ctx.translate(this.cx, this.cy)
+
     for (var i = 0, len = this.layers.length; i < len; i++) {
       Math.random() > 0.75 && this.layers[i].sort()
-      this.ctx.save()
-      this.ctx.translate(this.cx, this.cy)
       this.layers[i].render(this.ctx)
-      this.ctx.restore()
     }
 
     this.ctx.restore()

@@ -10,7 +10,7 @@ define(function() {
     this.x = this.y = this.z = null
 
     this.start = null
-    this.interval = interval
+    this.interval = interval || 1
 
     this.callback = callback
   }
@@ -18,7 +18,7 @@ define(function() {
   Animation.prototype.init = function init() {
     if (this.start !== null) return
 
-    this.start = +new Date
+    this.start = Date.now()
     this.x = this.startX = this.item.x
     this.y = this.startY = this.item.y
     this.z = this.startZ = this.item.z
@@ -35,8 +35,8 @@ define(function() {
     }
   }
 
-  Animation.prototype.run = function run(timestamp) {
-    var percent = (timestamp - this.start) / this.interval
+  Animation.prototype.run = function run() {
+    var percent = (Date.now() - this.start) / this.interval
       , frame = Math.round(percent * (this.frames - 1))
 
     if (percent < 0)
