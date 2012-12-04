@@ -1,5 +1,5 @@
 define(['animation'], function(Animation) {
-  
+
   var abs = Math.abs
 
   function Item(options) {
@@ -63,15 +63,18 @@ define(['animation'], function(Animation) {
 
     var dx = this.projection.x - item.projection.x
       , dy = this.projection.y - item.projection.y
-      , radius = dx * dx + dy * dy
+      , dist = dx * dx + dy * dy
 
-    if (radius > 3000)
-      return false
-    return true
+    if (dist < 3000)
+      return true
   }
 
   Item.prototype.neighbors = function neighbors(item) {
-    if (abs(this.x - item.x) < 3 && abs(this.y - item.y) < 3)
+    var dx = this.x - item.x
+      , dy = this.y - item.y
+      , dist = dx * dx + dy * dy
+
+    if (dist < 9) // 3 blocks around
       return true
   }
 
