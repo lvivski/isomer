@@ -108,8 +108,8 @@ define(['animation'], function(Animation) {
   Item.prototype.reset = function reset() {
     if (this.animation.length === 0) return
 
-    for (var i = 0, len = this.animation.length, a; i < len; i++) {
-      a = this.animation[i]
+    for (var i = 0, len = this.animation.length; i < len; i++) {
+      var a = this.animation[i]
       a.init()
       a.end()
     }

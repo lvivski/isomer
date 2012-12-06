@@ -23,8 +23,8 @@ define(['item'], function(Item) {
       , ly = -this.world.cy
       , ry = -this.world.cy + this.world.height
 
-    for (var i = 0, len = this.items.length, item; i < len; i++) {
-      item = this.items[i]
+    for (var i = 0, len = this.items.length; i < len; i++) {
+      var item = this.items[i]
       if (!item.in(lx, ly, rx, ry)) continue
       if (!item._discovered && !item.neighbors(this.world.player)) {
         continue
@@ -61,8 +61,8 @@ define(['item'], function(Item) {
 
     // var cell = { x: x, y: y, z: z }
       // , pos = search(cell, this.items, Item.compare)
-    for (var i = 0, item, cmp; i < this.items.length; i++) {
-      item = this.items[i]
+    for (var i = 0, len = this.items.length; i < len; i++) {
+      var item = this.items[i]
       // cmp = Item.compare(cell, item)
       // if (cmp > 0) break
       if (x === item.x && y === item.y && z === item.z) return item
