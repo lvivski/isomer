@@ -49,7 +49,7 @@ define(['layer'], function(Layer) {
     this.cy = Math.round(this.height / 2 - this.projection.y)
 
     this.ctx.save()
-    this.ctx.fillRect(0, 0, this.width, this.height)
+    this.ctx.clearRect(0, 0, this.width, this.height)
     this.ctx.translate(this.cx, this.cy)
 
     for (var i = 0, len = this.layers.length; i < len; i++) {
