@@ -18,6 +18,7 @@ function Item(options) {
 Item.prototype.init = function (layer) {
   this.layer = layer
   this.world = layer.world
+  this.ctx = layer.ctx
   this.position(this.x, this.y, this.z)
   this.offset(this.sx, this.sy)
 }
@@ -34,9 +35,9 @@ Item.prototype.position = function (x, y, z) {
 }
 
 Item.prototype.in = function (lx, ly, rx, ry) {
-  var w = this.width
-    , h = this.height
-    , center = this.projection
+  var w = this.width,
+      h = this.height,
+      center = this.projection
 
   return center.x + w >= lx && center.x - w <= rx
       && center.y + h >= ly && center.y - h <= ry
@@ -57,45 +58,45 @@ Item.prototype.covers = function (item) {
   if (this.z !== item.z || Item.compare(this, item) <= 0 || this === item)
     return false
 
-  var dx = this.projection.x - item.projection.x
-    , dy = this.projection.y - item.projection.y
-    , dist = dx * dx + dy * dy
+  var dx = this.projection.x - item.projection.x,
+      dy = this.projection.y - item.projection.y,
+      dist = dx * dx + dy * dy
 
   if (dist < 3000)
     return true
 }
 
 Item.prototype.neighbors = function (item) {
-  var dx = this.x - item.x
-    , dy = this.y - item.y
-    , dist = dx * dx + dy * dy
+  var dx = this.x - item.x,
+      dy = this.y - item.y,
+      dist = dx * dx + dy * dy
 
   if (dist < 9) // 3 blocks around
     return true
 }
 
-Item.prototype.render = function (ctx) {}
+Item.prototype.render = function (tick) {}
 
-Item.prototype.animate = function animate(props, interval, callback) {
+Item.prototype.animate = function (props, interval, callback) {
   this.animations.push(new Animation(this, props, interval, callback))
   this.world._changed = true
 }
 
-Item.prototype.animation = function () {
+Item.prototype.animation = function (tick) {  
   if (this.animations.length === 0) return
 
   while (this.animations.length !== 0) {
     var first = this.animations[0]
-    first.init()
+    first.init(tick)
 
-    if (first.start + first.interval <= Date.now()) {
+    if (first.start + first.interval <= tick) {
       this.animations.shift()
       first.end()
       this.world._changed = true
       continue
     }
 
-    first.run()
+    first.run(tick)
     this.world._changed = true
     break
   }

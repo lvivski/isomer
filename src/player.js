@@ -19,20 +19,20 @@ Player.prototype.constructor = Player
 Player.prototype.command = function (cmd, options, callback) {
   if (cmd === 'move') {
     var sy = 0
-    if (options.dy > 0)
+    if (options.y > 0)
       sy = 192
-    else if (options.dx > 0)
+    else if (options.x > 0)
       sy = 64
-    else if (options.dx < 0)
+    else if (options.x < 0)
       sy = 128
-    this.animate({ dx: options.dx, dy: options.dy, dz: options.dz, sy: sy, frames: 4}, 300, callback)
+    this.animate({x: options.x, y: options.y, z: options.z, sy: sy, frames: 4}, 300, callback)
   } else {
     callback()
   }
 }
 
-Player.prototype.render = function (ctx) {
-  ctx.drawImage(
+Player.prototype.render = function () {
+  this.ctx.drawImage(
     this.sprite,
     this.sx,
     this.sy,

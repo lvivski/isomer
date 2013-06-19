@@ -60,13 +60,13 @@ new Sprites({
     moving = true
 
     if (code === 38 || code === 87) { // up | w
-      player.command('move', {dx: 0, dy: -1, dz: 0}, release)
+      player.command('move', {y: -1}, release)
     } else if (code === 40 || code === 83) { // down | s
-      player.command('move', {dx: 0, dy: 1, dz: 0}, release)
+      player.command('move', {y: 1}, release)
     } else if (code === 37 || code === 65) { // left | a
-      player.command('move', {dx: -1, dy: 0, dz: 0}, release)
+      player.command('move', {x: -1}, release)
     } else if (code === 39 || code === 68) { // right | d
-      player.command('move', {dx: 1, dy: 0, dz: 0}, release)
+      player.command('move', {x: 1}, release)
       /*} else if (code === 32 || code === 16) { // space | shift
 
        } else if (code === 13 || code === 69) { // enter | e

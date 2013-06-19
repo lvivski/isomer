@@ -1,5 +1,6 @@
 JS_COMPILER ?= ./node_modules/uglify-js/bin/uglifyjs
 FILES = \
+	src/sprites.js \
 	src/layer.js \
 	src/world.js \
 	src/item.js \
@@ -13,10 +14,10 @@ all: \
 
 isomer.js: ${FILES}
 	@rm -f $@
-	#@echo "(function(){" > $@.tmp
-	#@echo "'use strict'" >> $@.tmp
+# @echo "(function(){" > $@.tmp
+# @echo "'use strict'" >> $@.tmp
 	@cat $(filter %.js,$^) >> $@.tmp
-	#@echo "}())" >> $@.tmp
+# @echo "}())" >> $@.tmp
 	@$(JS_COMPILER) $@.tmp -b indent-level=2 -o $@
 	@rm $@.tmp
 	@chmod a-w $@

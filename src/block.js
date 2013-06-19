@@ -14,8 +14,8 @@ function Block(options) {
 Block.prototype = Object.create(Item.prototype)
 Block.prototype.constructor = Block
 
-Block.prototype.render = function render(ctx) {
-  ctx.drawImage(
+Block.prototype.render = function render(tick) {
+  this.ctx.drawImage(
     this.sprite,
     this.sx,
     this.sy,

@@ -26,8 +26,8 @@ World.prototype.init = function () {
       onframe = window.webkitRequestAnimationFrame
              || window.RequestAnimationFrame
 
-  onframe(function render() {
-    self.render()
+  onframe(function render(tick) {
+    self.render(tick)
     onframe(render)
   })
 }
@@ -39,7 +39,7 @@ World.prototype.project = function (x, y, z) {
   }
 }
 
-World.prototype.render = function () {
+World.prototype.render = function (tick) {
   if (!this._changed) return
   this._changed = false
 
@@ -52,7 +52,7 @@ World.prototype.render = function () {
 
   for (var i = 0, len = this.layers.length; i < len; i++) {
     Math.random() > 0.75 && this.layers[i].sort()
-    this.layers[i].render(this.ctx)
+    this.layers[i].render(tick)
   }
 
   this.ctx.restore()

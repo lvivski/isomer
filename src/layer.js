@@ -9,13 +9,14 @@ function Layer(z) {
 
 Layer.prototype.init = function (world) {
   this.world = world
+  this.ctx = world.ctx
 }
 
 Layer.prototype.has = function (item) {
   return this.items.indexOf(item) >= 0
 }
 
-Layer.prototype.render = function (ctx) {
+Layer.prototype.render = function (tick) {
   var lx = -this.world.cx,
       rx = -this.world.cx + this.world.width,
       ly = -this.world.cy,
@@ -29,12 +30,12 @@ Layer.prototype.render = function (ctx) {
     } else {
       item._discovered = true
     }
-    ctx.globalAlpha = 1
+    this.ctx.globalAlpha = 1
     if (item.covers(this.world.player)) {
-      ctx.globalAlpha = 0.6
+      this.ctx.globalAlpha = 0.6
     }
-    item.render(ctx)
-    item.animation()
+    item.render(tick)
+    item.animation(tick)
   }
 }
 

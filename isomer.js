@@ -1,3 +1,21 @@
+function Sprites(urls) {
+  this.urls = urls;
+}
+
+Sprites.prototype.load = function(callback) {
+  var ids = Object.keys(this.urls), length = ids.length, sprites = {};
+  ids.forEach(function(id) {
+    var img = new Image();
+    img.onload = function() {
+      sprites[id] = this;
+      if (--length === 0) {
+        callback(sprites);
+      }
+    };
+    img.src = this.urls[id];
+  }, this);
+};
+
 function Layer(z) {
   this.items = [];
   this.z = z;
@@ -7,13 +25,14 @@ function Layer(z) {
 
 Layer.prototype.init = function(world) {
   this.world = world;
+  this.ctx = world.ctx;
 };
 
 Layer.prototype.has = function(item) {
   return this.items.indexOf(item) >= 0;
 };
 
-Layer.prototype.render = function(ctx) {
+Layer.prototype.render = function(tick) {
   var lx = -this.world.cx, rx = -this.world.cx + this.world.width, ly = -this.world.cy, ry = -this.world.cy + this.world.height;
   for (var i = 0, len = this.items.length; i < len; i++) {
     var item = this.items[i];
@@ -23,12 +42,12 @@ Layer.prototype.render = function(ctx) {
     } else {
       item._discovered = true;
     }
-    ctx.globalAlpha = 1;
+    this.ctx.globalAlpha = 1;
     if (item.covers(this.world.player)) {
-      ctx.globalAlpha = .6;
+      this.ctx.globalAlpha = .6;
     }
-    item.render(ctx);
-    item.animation();
+    item.render(tick);
+    item.animation(tick);
   }
 };
 
@@ -111,8 +130,8 @@ function World(options) {
 
 World.prototype.init = function() {
   var self = this, onframe = window.webkitRequestAnimationFrame || window.RequestAnimationFrame;
-  onframe(function render() {
-    self.render();
+  onframe(function render(tick) {
+    self.render(tick);
     onframe(render);
   });
 };
@@ -124,7 +143,7 @@ World.prototype.project = function(x, y, z) {
   };
 };
 
-World.prototype.render = function() {
+World.prototype.render = function(tick) {
   if (!this._changed) return;
   this._changed = false;
   this.cx = Math.round(this.width / 2 - this.projection.x);
@@ -134,7 +153,7 @@ World.prototype.render = function() {
   this.ctx.translate(this.cx, this.cy);
   for (var i = 0, len = this.layers.length; i < len; i++) {
     Math.random() > .75 && this.layers[i].sort();
-    this.layers[i].render(this.ctx);
+    this.layers[i].render(tick);
   }
   this.ctx.restore();
 };
@@ -201,6 +220,7 @@ function Item(options) {
 Item.prototype.init = function(layer) {
   this.layer = layer;
   this.world = layer.world;
+  this.ctx = layer.ctx;
   this.position(this.x, this.y, this.z);
   this.offset(this.sx, this.sy);
 };
@@ -240,25 +260,25 @@ Item.prototype.neighbors = function(item) {
   if (dist < 9) return true;
 };
 
-Item.prototype.render = function(ctx) {};
+Item.prototype.render = function(tick) {};
 
-Item.prototype.animate = function animate(props, interval, callback) {
+Item.prototype.animate = function(props, interval, callback) {
   this.animations.push(new Animation(this, props, interval, callback));
   this.world._changed = true;
 };
 
-Item.prototype.animation = function() {
+Item.prototype.animation = function(tick) {
   if (this.animations.length === 0) return;
   while (this.animations.length !== 0) {
     var first = this.animations[0];
-    first.init();
-    if (first.start + first.interval <= Date.now()) {
+    first.init(tick);
+    if (first.start + first.interval <= tick) {
       this.animations.shift();
       first.end();
       this.world._changed = true;
       continue;
     }
-    first.run();
+    first.run(tick);
     this.world._changed = true;
     break;
   }
@@ -299,8 +319,8 @@ Block.prototype = Object.create(Item.prototype);
 
 Block.prototype.constructor = Block;
 
-Block.prototype.render = function render(ctx) {
-  ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.projection.x - 32, this.projection.y - 16, this.width, this.height);
+Block.prototype.render = function render(tick) {
+  this.ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.projection.x - 32, this.projection.y - 16, this.width, this.height);
 };
 
 function Player(sprite) {
@@ -324,11 +344,11 @@ Player.prototype.constructor = Player;
 Player.prototype.command = function(cmd, options, callback) {
   if (cmd === "move") {
     var sy = 0;
-    if (options.dy > 0) sy = 192; else if (options.dx > 0) sy = 64; else if (options.dx < 0) sy = 128;
+    if (options.y > 0) sy = 192; else if (options.x > 0) sy = 64; else if (options.x < 0) sy = 128;
     this.animate({
-      dx: options.dx,
-      dy: options.dy,
-      dz: options.dz,
+      x: options.x,
+      y: options.y,
+      z: options.z,
       sy: sy,
       frames: 4
     }, 300, callback);
@@ -337,53 +357,53 @@ Player.prototype.command = function(cmd, options, callback) {
   }
 };
 
-Player.prototype.render = function(ctx) {
-  ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.projection.x - 32, this.projection.y - 24, this.width, this.height);
+Player.prototype.render = function() {
+  this.ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.projection.x - 32, this.projection.y - 24, this.width, this.height);
 };
 
 function Animation(item, props, interval, callback) {
   this.item = item;
-  this.props = props;
   this.sprite = props.sprite;
   this.frames = props.frames;
-  this.startX = this.startY = this.startZ = null;
-  this.x = this.y = this.z = null;
+  this.sy = props.sy;
+  this.x = props.x | 0;
+  this.y = props.y | 0;
+  this.z = props.z | 0;
+  this.initial = null;
   this.start = null;
   this.interval = interval || 1;
   this.callback = callback;
 }
 
-Animation.prototype.init = function() {
+Animation.prototype.init = function(tick) {
   if (this.start !== null) return;
-  this.start = Date.now();
-  this.x = this.startX = this.item.x;
-  this.y = this.startY = this.item.y;
-  this.z = this.startZ = this.item.z;
-  var names = [ "x", "y", "z" ];
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
-    if (this.props.hasOwnProperty(name)) {
-      this[name] = this.props[name];
-    } else if (this.props.hasOwnProperty("d" + name)) {
-      this[name] += this.props["d" + name];
-    }
-  }
-  if (this.item.layer.get(this.x, this.y, this.z)) {
-    this.x = this.startX;
-    this.y = this.startY;
-    this.z = this.startZ;
+  this.start = tick;
+  this.initial = {
+    x: this.item.x,
+    y: this.item.y,
+    z: this.item.z
+  };
+  if (this.item.layer.get(this.initial.x + this.x, this.initial.y + this.y, this.initial.z + this.z)) {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
   }
 };
 
-Animation.prototype.run = function() {
-  var percent = (Date.now() - this.start) / this.interval, frame = Math.round(percent * (this.frames - 1));
-  if (percent < 0) percent = 0;
-  this.item.offset(this.item.width * frame, this.props.sy);
-  this.item.position(this.startX + (this.x - this.startX) * percent, this.startY + (this.y - this.startY) * percent, this.startZ + (this.z - this.startZ) * percent);
+Animation.prototype.run = function(tick) {
+  var percent = (tick - this.start) / this.interval, frame = Math.round(percent * (this.frames - 1));
+  this.item.offset(this.item.width * frame, this.sy);
+  this.transform(percent);
+};
+
+Animation.prototype.transform = function(percent) {
+  this.item.position(this.initial.x + this.x * percent, this.initial.y + this.y * percent, this.initial.z + this.z * percent);
 };
 
 Animation.prototype.end = function() {
-  this.item.position(this.x, this.y, this.z);
-  if (this.sprite) this.item.sprite = this.sprite;
+  this.transform(1);
+  if (this.sprite) {
+    this.item.sprite = this.sprite;
+  }
   this.callback && this.callback();
 };
