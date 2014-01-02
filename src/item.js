@@ -15,10 +15,10 @@ function Item(options) {
 	this._discovered = false
 }
 
-Item.prototype.init = function (layer) {
-	this.layer = layer
-	this.world = layer.world
-	this.ctx = layer.ctx
+Item.prototype.init = function (region) {
+	this.region = region
+	this.world = region.world
+	this.ctx = region.ctx
 	this.position(this.x, this.y, this.z)
 	this.offset(this.sx, this.sy)
 }
@@ -114,7 +114,7 @@ Item.prototype.reset = function () {
 }
 
 Item.prototype.remove = function () {
-	this.layer.remove(this)
+	this.region.remove(this)
 }
 
 Item.compare = function compare(a, b) {

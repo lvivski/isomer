@@ -16,7 +16,7 @@ Sprites.prototype.load = function(callback) {
   }, this);
 };
 
-function Layer(x, y, z) {
+function Region(x, y, z) {
   this.items = [];
   this.x = x;
   this.y = y;
@@ -30,21 +30,21 @@ function Layer(x, y, z) {
   this.world = null;
 }
 
-Layer.prototype.init = function(world) {
+Region.prototype.init = function(world) {
   this.world = world;
   this.ctx = world.ctx;
 };
 
-Layer.prototype.has = function(item) {
+Region.prototype.has = function(item) {
   return this.items.indexOf(item) >= 0;
 };
 
-Layer.prototype.contains = function(item) {
+Region.prototype.contains = function(item) {
   var x = Math.round(item.x), y = Math.round(item.y), z = Math.round(item.z);
   return this.lx <= x && x < this.rx && this.ly <= y && y < this.ry && this.lz <= z && z < this.rz;
 };
 
-Layer.prototype.render = function(tick) {
+Region.prototype.render = function(tick) {
   var lx = -this.world.cx, rx = -this.world.cx + this.world.width, ly = -this.world.cy, ry = -this.world.cy + this.world.height, z = this.world.player.z;
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
@@ -66,25 +66,25 @@ Layer.prototype.render = function(tick) {
   }
 };
 
-Layer.prototype.add = function(item) {
+Region.prototype.add = function(item) {
   item.init(this);
   this.insert(item);
 };
 
-Layer.prototype.isVisible = function(z) {
+Region.prototype.isVisible = function(z) {
   return this.lz <= z + 5 && z - 5 <= this.rz;
 };
 
-Layer.prototype.insert = function(item) {
+Region.prototype.insert = function(item) {
   if (this.items.length === 0) {
     this.items.push(item);
     return;
   }
-  var pos = Layer.search(item, this.items, Item.compare);
+  var pos = Region.search(item, this.items, Item.compare);
   this.items.splice(pos, 0, item);
 };
 
-Layer.prototype.get = function(x, y, z) {
+Region.prototype.get = function(x, y, z) {
   if (this.items.length === 0) return false;
   for (var i = 0; i < this.items.length; ++i) {
     var item = this.items[i];
@@ -93,22 +93,22 @@ Layer.prototype.get = function(x, y, z) {
   return false;
 };
 
-Layer.prototype.remove = function(item) {
+Region.prototype.remove = function(item) {
   var index = this.items.indexOf(item);
   if (index !== -1) this.items.splice(index, 1);
 };
 
-Layer.prototype.sort = function() {
+Region.prototype.sort = function() {
   this.items = this.items.sort(Item.compare);
 };
 
-Layer.compare = function(a, b) {
+Region.compare = function(a, b) {
   if (a.z > b.z) return -1;
   if (a.z < b.z) return 1;
   return a.x + a.y - b.x - b.y;
 };
 
-Layer.search = function(needle, stack, comparator) {
+Region.search = function(needle, stack, comparator) {
   var i = 0, j = stack.length - 1, middle = 0;
   while (i <= j) {
     middle = i + j >> 1;
@@ -142,7 +142,7 @@ function World(options) {
     z: 0
   };
   this.projection = this.project(this.center.x, this.center.y, this.center.z);
-  this.layers = [];
+  this.regions = [];
   this._changed = false;
   this.init();
 }
@@ -170,82 +170,81 @@ World.prototype.render = function(tick) {
   this.ctx.save();
   this.ctx.clearRect(0, 0, this.width, this.height);
   this.ctx.translate(this.cx, this.cy);
-  for (var i = 0; i < this.layers.length; i++) {
-    if (this.layers[i].isVisible(this.center.z)) {
-      this.layers[i].sort();
-      this.layers[i].render(tick);
+  for (var i = 0; i < this.regions.length; i++) {
+    if (this.regions[i].isVisible(this.center.z)) {
+      this.regions[i].sort();
+      this.regions[i].render(tick);
     }
   }
   this.ctx.restore();
 };
 
 World.prototype.add = function(item) {
-  var layer = this.getLayer(item);
-  if (!layer) {
+  var region = this.getRegion(item);
+  if (!region) {
     var x = Math.round(item.x / 10) * 10 + 5, y = Math.round(item.y / 10) * 10 + 5, z = Math.round(item.z / 10) * 10 + 5;
-    layer = new Layer(x, y, z);
-    this.addLayer(layer);
+    region = new Region(x, y, z);
+    this.addRegion(region);
   }
-  layer.add(item);
+  region.add(item);
 };
 
-World.prototype.getLayer = function(item) {
-  for (var i = 0, len = this.layers.length; i < len; i++) {
-    if (this.layers[i].contains(item)) {
-      return this.layers[i];
+World.prototype.getRegion = function(item) {
+  for (var i = 0, len = this.regions.length; i < len; i++) {
+    if (this.regions[i].contains(item)) {
+      return this.regions[i];
     }
   }
   return false;
 };
 
-World.prototype.addLayer = function(layer) {
-  layer.init(this);
-  this.layers.push(layer);
+World.prototype.addRegion = function(region) {
+  region.init(this);
+  this.regions.push(region);
 };
 
 World.prototype.setPlayer = function(item) {
   this.player = item;
-  this.layers = [];
   this.setCenter(item.x, item.y, item.z);
   this.add(item);
 };
 
-World.prototype.setCenter = function(x, y, z, layerChanged) {
+World.prototype.setCenter = function(x, y, z, regionChanged) {
   this.center = {
     x: x,
     y: y,
     z: z
   };
   this.projection = this.project(x, y, z);
-  if (this.layers.length !== 0 && !layerChanged) return;
-  this.layers.sort(Layer.compare);
+  if (this.regions.length !== 0 && !regionChanged) return;
+  this.regions.sort(Region.compare);
 };
 
 World.prototype.handleMove = function(item) {
-  var layerChanged = false;
-  if (!item.layer.contains(item)) {
-    layerChanged = true;
+  var regionChanged = false;
+  if (!item.region.contains(item)) {
+    regionChanged = true;
     item.remove();
-    for (var i = 0; i < this.layers.length; i++) {
-      if (this.layers[i].contains(item)) {
-        this.layers[i].add(item);
+    for (var i = 0; i < this.regions.length; i++) {
+      if (this.regions[i].contains(item)) {
+        this.regions[i].add(item);
         break;
       }
     }
   }
   if (this.player === item) {
-    this.setCenter(item.x, item.y, item.z, layerChanged);
+    this.setCenter(item.x, item.y, item.z, regionChanged);
   }
 };
 
 World.prototype.hasObstacle = function(x, y, z) {
-  var layer = this.getLayer({
+  var region = this.getRegion({
     x: x,
     y: y,
     z: z
   });
-  if (!layer) return true;
-  return !!layer.get(x, y, z);
+  if (!region) return true;
+  return !!region.get(x, y, z);
 };
 
 function Item(options) {
@@ -261,10 +260,10 @@ function Item(options) {
   this._discovered = false;
 }
 
-Item.prototype.init = function(layer) {
-  this.layer = layer;
-  this.world = layer.world;
-  this.ctx = layer.ctx;
+Item.prototype.init = function(region) {
+  this.region = region;
+  this.world = region.world;
+  this.ctx = region.ctx;
   this.position(this.x, this.y, this.z);
   this.offset(this.sx, this.sy);
 };
@@ -339,7 +338,7 @@ Item.prototype.reset = function() {
 };
 
 Item.prototype.remove = function() {
-  this.layer.remove(this);
+  this.region.remove(this);
 };
 
 Item.compare = function compare(a, b) {

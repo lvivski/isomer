@@ -1,7 +1,7 @@
 JS_COMPILER ?= ./node_modules/uglify-js/bin/uglifyjs
 FILES = \
 	src/sprites.js \
-	src/layer.js \
+	src/region.js \
 	src/world.js \
 	src/item.js \
 	src/block.js \

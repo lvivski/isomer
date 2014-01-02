@@ -1,4 +1,4 @@
-function Layer(x, y, z) {
+function Region(x, y, z) {
 	this.items = []
 	this.x = x
 	this.y = y
@@ -15,16 +15,16 @@ function Layer(x, y, z) {
 	this.world = null
 }
 
-Layer.prototype.init = function (world) {
+Region.prototype.init = function (world) {
 	this.world = world
 	this.ctx = world.ctx
 }
 
-Layer.prototype.has = function (item) {
+Region.prototype.has = function (item) {
 	return this.items.indexOf(item) >= 0
 }
 
-Layer.prototype.contains = function (item) {
+Region.prototype.contains = function (item) {
 	var x = Math.round(item.x),
 	    y = Math.round(item.y),
 	    z = Math.round(item.z)
@@ -33,7 +33,7 @@ Layer.prototype.contains = function (item) {
 		this.lz <= z && z < this.rz
 };
 
-Layer.prototype.render = function (tick) {
+Region.prototype.render = function (tick) {
 	var lx = -this.world.cx,
 	    rx = -this.world.cx + this.world.width,
 	    ly = -this.world.cy,
@@ -63,27 +63,27 @@ Layer.prototype.render = function (tick) {
 	}
 }
 
-Layer.prototype.add = function (item) {
+Region.prototype.add = function (item) {
 	item.init(this)
 	this.insert(item)
 }
 
-Layer.prototype.isVisible = function (z) {
+Region.prototype.isVisible = function (z) {
 	return this.lz <= z + 5 && z - 5 <= this.rz
 }
 
-Layer.prototype.insert = function (item) {
+Region.prototype.insert = function (item) {
 	if (this.items.length === 0) {
 		this.items.push(item)
 		return
 	}
 
-	var pos = Layer.search(item, this.items, Item.compare)
+	var pos = Region.search(item, this.items, Item.compare)
 
 	this.items.splice(pos, 0, item)
 }
 
-Layer.prototype.get = function (x, y, z) {
+Region.prototype.get = function (x, y, z) {
 	if (this.items.length === 0) return false
 
 	// var cell = { x: x, y: y, z: z }
@@ -98,24 +98,24 @@ Layer.prototype.get = function (x, y, z) {
 	return false
 }
 
-Layer.prototype.remove = function (item) {
+Region.prototype.remove = function (item) {
 	var index = this.items.indexOf(item)
 	if (index !== -1) this.items.splice(index, 1)
 }
 
-Layer.prototype.sort = function () {
+Region.prototype.sort = function () {
 	this.items = this.items.sort(Item.compare)
 }
 
 
-Layer.compare = function (a, b) {
+Region.compare = function (a, b) {
 	if (a.z > b.z) return -1
 	if (a.z < b.z) return 1
 
 	return a.x + a.y - b.x - b.y
 }
 
-Layer.search = function (needle, stack, comparator) {
+Region.search = function (needle, stack, comparator) {
 	var i = 0,
 	    j = stack.length - 1,
 	    middle = 0
