@@ -16,10 +16,17 @@ Sprites.prototype.load = function(callback) {
   }, this);
 };
 
-function Layer(z) {
+function Layer(x, y, z) {
   this.items = [];
+  this.x = x;
+  this.y = y;
   this.z = z;
-  this.map = {};
+  this.lx = this.x - 5;
+  this.ly = this.y - 5;
+  this.lz = this.z - 5;
+  this.rx = this.x + 5;
+  this.ry = this.y + 5;
+  this.rz = this.z + 5;
   this.world = null;
 }
 
@@ -32,28 +39,40 @@ Layer.prototype.has = function(item) {
   return this.items.indexOf(item) >= 0;
 };
 
+Layer.prototype.contains = function(item) {
+  var x = Math.round(item.x), y = Math.round(item.y), z = Math.round(item.z);
+  return this.lx <= x && x < this.rx && this.ly <= y && y < this.ry && this.lz <= z && z < this.rz;
+};
+
 Layer.prototype.render = function(tick) {
-  var lx = -this.world.cx, rx = -this.world.cx + this.world.width, ly = -this.world.cy, ry = -this.world.cy + this.world.height;
-  for (var i = 0, len = this.items.length; i < len; i++) {
+  var lx = -this.world.cx, rx = -this.world.cx + this.world.width, ly = -this.world.cy, ry = -this.world.cy + this.world.height, z = this.world.player.z;
+  for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
+    if (item.z < z) break;
     if (!item.in(lx, ly, rx, ry)) continue;
     if (!item._discovered && !item.neighbors(this.world.player)) {
       continue;
     } else {
       item._discovered = true;
     }
-    this.ctx.globalAlpha = 1;
-    if (item.covers(this.world.player)) {
-      this.ctx.globalAlpha = .6;
+    var covers = item.covers(this.world.player);
+    if (covers) {
+      this.ctx.save();
+      this.ctx.globalAlpha = .5;
     }
     item.render(tick);
     item.animation(tick);
+    if (covers) this.ctx.restore();
   }
 };
 
 Layer.prototype.add = function(item) {
   item.init(this);
   this.insert(item);
+};
+
+Layer.prototype.isVisible = function(z) {
+  return this.lz <= z + 5 && z - 5 <= this.rz;
 };
 
 Layer.prototype.insert = function(item) {
@@ -86,7 +105,7 @@ Layer.prototype.sort = function() {
 Layer.compare = function(a, b) {
   if (a.z > b.z) return -1;
   if (a.z < b.z) return 1;
-  return 0;
+  return a.x + a.y - b.x - b.y;
 };
 
 Layer.search = function(needle, stack, comparator) {
@@ -129,7 +148,7 @@ function World(options) {
 }
 
 World.prototype.init = function() {
-  var self = this, onframe = window.webkitRequestAnimationFrame || window.RequestAnimationFrame;
+  var self = this, onframe = window.webkitRequestAnimationFrame || window.requestAnimationFrame;
   onframe(function render(tick) {
     self.render(tick);
     onframe(render);
@@ -139,7 +158,7 @@ World.prototype.init = function() {
 World.prototype.project = function(x, y, z) {
   return {
     x: Math.round((x - y) * this.cell.width / 2),
-    y: Math.round(((x + y) / 2 - z) * this.cell.height)
+    y: Math.round(((x + y) / 2 + z) * this.cell.height)
   };
 };
 
@@ -151,22 +170,28 @@ World.prototype.render = function(tick) {
   this.ctx.save();
   this.ctx.clearRect(0, 0, this.width, this.height);
   this.ctx.translate(this.cx, this.cy);
-  for (var i = 0, len = this.layers.length; i < len; i++) {
-    Math.random() > .75 && this.layers[i].sort();
-    this.layers[i].render(tick);
+  for (var i = 0; i < this.layers.length; i++) {
+    if (this.layers[i].isVisible(this.center.z)) {
+      this.layers[i].sort();
+      this.layers[i].render(tick);
+    }
   }
   this.ctx.restore();
 };
 
 World.prototype.add = function(item) {
   var layer = this.getLayer(item);
-  if (!layer) return;
+  if (!layer) {
+    var x = Math.round(item.x / 10) * 10 + 5, y = Math.round(item.y / 10) * 10 + 5, z = Math.round(item.z / 10) * 10 + 5;
+    layer = new Layer(x, y, z);
+    this.addLayer(layer);
+  }
   layer.add(item);
 };
 
 World.prototype.getLayer = function(item) {
   for (var i = 0, len = this.layers.length; i < len; i++) {
-    if (this.layers[i].z === item.z) {
+    if (this.layers[i].contains(item)) {
       return this.layers[i];
     }
   }
@@ -185,23 +210,42 @@ World.prototype.setPlayer = function(item) {
   this.add(item);
 };
 
-World.prototype.setCenter = function(x, y, z) {
+World.prototype.setCenter = function(x, y, z, layerChanged) {
   this.center = {
     x: x,
     y: y,
     z: z
   };
   this.projection = this.project(x, y, z);
-  if (this.layers.length === 0) {
-    this.addLayer(new Layer(this.player.z - 1));
-    this.addLayer(new Layer(this.player.z));
-  }
+  if (this.layers.length !== 0 && !layerChanged) return;
+  this.layers.sort(Layer.compare);
 };
 
 World.prototype.handleMove = function(item) {
-  if (this.player === item) {
-    this.setCenter(item.x, item.y, item.z);
+  var layerChanged = false;
+  if (!item.layer.contains(item)) {
+    layerChanged = true;
+    item.remove();
+    for (var i = 0; i < this.layers.length; i++) {
+      if (this.layers[i].contains(item)) {
+        this.layers[i].add(item);
+        break;
+      }
+    }
   }
+  if (this.player === item) {
+    this.setCenter(item.x, item.y, item.z, layerChanged);
+  }
+};
+
+World.prototype.hasObstacle = function(x, y, z) {
+  var layer = this.getLayer({
+    x: x,
+    y: y,
+    z: z
+  });
+  if (!layer) return true;
+  return !!layer.get(x, y, z);
 };
 
 function Item(options) {
@@ -250,7 +294,7 @@ Item.prototype.move = function(dx, dy, dz) {
 };
 
 Item.prototype.covers = function(item) {
-  if (this.z !== item.z || Item.compare(this, item) <= 0 || this === item) return false;
+  if (Item.compare(this, item) <= 0 || this === item) return false;
   var dx = this.projection.x - item.projection.x, dy = this.projection.y - item.projection.y, dist = dx * dx + dy * dy;
   if (dist < 3e3) return true;
 };
@@ -299,6 +343,8 @@ Item.prototype.remove = function() {
 };
 
 Item.compare = function compare(a, b) {
+  if (a.z > b.z) return -1;
+  if (a.z < b.z) return 1;
   return a.x + a.y - b.x - b.y;
 };
 
@@ -330,7 +376,7 @@ function Player(sprite) {
     height: 64,
     x: 0,
     y: 0,
-    z: 1,
+    z: 0,
     sx: 0,
     sy: 192
   });
@@ -383,7 +429,7 @@ Animation.prototype.init = function(tick) {
     y: this.item.y,
     z: this.item.z
   };
-  if (this.item.layer.get(this.initial.x + this.x, this.initial.y + this.y, this.initial.z + this.z)) {
+  if (this.item.world.hasObstacle(this.initial.x + this.x, this.initial.y + this.y, this.initial.z + this.z)) {
     this.x = 0;
     this.y = 0;
     this.z = 0;
