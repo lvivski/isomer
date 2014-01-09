@@ -1,4 +1,4 @@
-function Animation(item, props, interval, callback) {
+function Animation(item, props, duration, callback) {
 	this.item = item
 	this.sprite = props.sprite
 	this.frames = props.frames
@@ -11,7 +11,7 @@ function Animation(item, props, interval, callback) {
 
 	this.initial = null
 	this.start = null
-	this.interval = interval || 1
+	this.duration = duration || 1
 
 	this.callback = callback
 }
@@ -35,7 +35,7 @@ Animation.prototype.init = function (tick) {
 }
 
 Animation.prototype.run = function (tick) {
-	var percent = (tick - this.start) / this.interval,
+	var percent = (tick - this.start) / this.duration,
 	    frame = Math.round(percent * (this.frames - 1))
 
 	this.item.offset(this.item.width * frame, this.sy)

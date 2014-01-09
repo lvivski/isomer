@@ -89,10 +89,9 @@ Item.prototype.animation = function (tick) {
 		var first = this.animations[0]
 		first.init(tick)
 
-		if (first.start + first.interval <= tick) {
+		if (first.start + first.duration <= tick) {
 			this.animations.shift()
 			first.end()
-			this.world._changed = true
 			continue
 		}
 

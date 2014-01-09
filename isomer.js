@@ -315,10 +315,9 @@ Item.prototype.animation = function(tick) {
   while (this.animations.length !== 0) {
     var first = this.animations[0];
     first.init(tick);
-    if (first.start + first.interval <= tick) {
+    if (first.start + first.duration <= tick) {
       this.animations.shift();
       first.end();
-      this.world._changed = true;
       continue;
     }
     first.run(tick);
@@ -406,7 +405,7 @@ Player.prototype.render = function() {
   this.ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.projection.x - 32, this.projection.y - 24, this.width, this.height);
 };
 
-function Animation(item, props, interval, callback) {
+function Animation(item, props, duration, callback) {
   this.item = item;
   this.sprite = props.sprite;
   this.frames = props.frames;
@@ -416,7 +415,7 @@ function Animation(item, props, interval, callback) {
   this.z = props.z | 0;
   this.initial = null;
   this.start = null;
-  this.interval = interval || 1;
+  this.duration = duration || 1;
   this.callback = callback;
 }
 
@@ -436,7 +435,7 @@ Animation.prototype.init = function(tick) {
 };
 
 Animation.prototype.run = function(tick) {
-  var percent = (tick - this.start) / this.interval, frame = Math.round(percent * (this.frames - 1));
+  var percent = (tick - this.start) / this.duration, frame = Math.round(percent * (this.frames - 1));
   this.item.offset(this.item.width * frame, this.sy);
   this.transform(percent);
 };
